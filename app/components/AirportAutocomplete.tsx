@@ -72,6 +72,8 @@ export default function AirportAutocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue, ''); // Clear IATA code when input changes
+
+    // Show suggestions immediately when typing
     setShowSuggestions(true);
 
     // Clear previous timeout
@@ -86,7 +88,8 @@ export default function AirportAutocomplete({
   };
 
   const handleSuggestionClick = (airport: Airport) => {
-    const displayValue = `${airport.name} (${airport.iataCode})`;
+    // Format the display value to include all relevant information
+    const displayValue = `${airport.name} - ${airport.address.cityName}, ${airport.address.countryName} (${airport.iataCode})`;
     onChange(displayValue, airport.iataCode);
     setShowSuggestions(false);
   };
@@ -106,7 +109,12 @@ export default function AirportAutocomplete({
           type="text"
           value={value}
           onChange={handleInputChange}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={() => {
+            setShowSuggestions(true);
+            if (value.length >= 2) {
+              searchAirports(value);
+            }
+          }}
           placeholder={placeholder}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
@@ -130,11 +138,16 @@ export default function AirportAutocomplete({
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => handleSuggestionClick(airport)}
             >
-              <div className="font-medium">{airport.name}</div>
-              <div className="text-sm text-gray-500">
-                {airport.address.cityName}, {airport.address.countryName} ({airport.iataCode})
+              <div className="font-medium">
+                {airport.name}
                 <span className="ml-2 text-xs text-gray-400">
                   {getAirportType(airport.subtype)}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500">
+                {airport.address.cityName}, {airport.address.countryName}
+                <span className="ml-2 font-semibold text-blue-600">
+                  {airport.iataCode}
                 </span>
               </div>
             </div>
